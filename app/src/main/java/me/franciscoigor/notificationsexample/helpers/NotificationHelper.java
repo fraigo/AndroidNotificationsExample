@@ -3,6 +3,7 @@ package me.franciscoigor.notificationsexample.helpers;
 
 import android.app.Activity;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -16,22 +17,33 @@ import java.lang.reflect.Method;
 
 public class NotificationHelper extends ContextWrapper {
 
-    private NotificationManagerCompat manager;
     public static final String DEFAULT_CHANNEL = "Default";
     public static final String URGENT_CHANNEL = "Urgent";
+    private NotificationManagerCompat manager;
+    private PendingIntent appIntent;
 
-    public NotificationHelper(Context context) {
-        super(context);
+    public NotificationHelper(Activity activity) {
+        super(activity);
         manager = NotificationManagerCompat.from(getApplicationContext());
+        appIntent = getApplicationIntent(activity);
         createNotificationChannel(DEFAULT_CHANNEL,DEFAULT_CHANNEL, NotificationManager.IMPORTANCE_DEFAULT);
         createNotificationChannel(URGENT_CHANNEL,URGENT_CHANNEL, NotificationManager.IMPORTANCE_MAX);
+
+    }
+
+    public PendingIntent getApplicationIntent(Activity activity){
+        Intent contentIntent = new Intent(getApplicationContext(), activity.getClass());
+        return PendingIntent.getActivity(getApplicationContext(), 0,
+                contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     public NotificationCompat.Builder getNotification(String title, String body, String channel) {
+
         return new NotificationCompat.Builder(getApplicationContext(),channel)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setSmallIcon(getSmallIcon())
+                .setContentIntent(appIntent)
                 .setAutoCancel(true);
     }
 
